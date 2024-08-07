@@ -2,5 +2,5 @@ streamlit
 pandas
 matplotlib
 prophet
-numpy
+numpy==1.23.4
 holidays
