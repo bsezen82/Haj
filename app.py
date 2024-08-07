@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from prophet import prophet
+from prophet import Prophet
+import numpy as np
 
+# Ensure the cmdstanpy backend is used for Prophet
+import cmdstanpy
+cmdstanpy.install_cmdstan()
 
 
 # Load the final data from the CSV file
@@ -31,7 +35,7 @@ metric_options = filtered_df['Metric'].unique()
 selected_metrics = st.multiselect('Select Metric(s)', metric_options, default=[metric_options[0]])
 
 # Option to make prediction
-make_prediction = st.checkbox('Predict next year')
+make_prediction = st.checkbox('Make prediction for next year')
 
 # Further filter the data based on selected locations and metrics
 filtered_df = filtered_df[filtered_df['Location'].isin(selected_locations) & filtered_df['Metric'].isin(selected_metrics)]
