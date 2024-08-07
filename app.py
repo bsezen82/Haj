@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from prophet import Prophet
+import numpy as nm
 
 # Load the final data from the CSV file
 file_path = 'final_data.csv'
