@@ -3,7 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load the final data from the CSV file
-final_df = pd.read_csv(final_data.csv)
+file_path = 'final_data.csv'
+final_df = pd.read_csv(file_path)
 
 # Fill null values with 0
 final_df = final_df.fillna(0)
