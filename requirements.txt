@@ -1,6 +1,5 @@
 streamlit==1.20.0
 pandas==1.5.3
 matplotlib==3.6.3
-prophet==1.1
-numpy==1.23.4
-cmdstanpy==0.9.68
+fbprophet==0.7.1
+numpy==1.19.5
