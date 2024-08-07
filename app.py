@@ -11,11 +11,11 @@ final_df = pd.read_csv(file_path)
 final_df = final_df.fillna(0)
 
 # Streamlit App
-st.title('Basic Reporting Environment')
+st.title('Haj and Umrah Statistics')
 
 # Filter by Description
 description_options = final_df['Description'].unique()
-selected_description = st.selectbox('Select Description', description_options)
+selected_description = st.selectbox('Select Report', description_options)
 
 # Filtered Data by Description
 filtered_df = final_df[final_df['Description'] == selected_description]
