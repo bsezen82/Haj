@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from prophet import Prophet
 
 # Load the final data from the CSV file
 file_path = 'final_data.csv'
@@ -10,11 +11,11 @@ final_df = pd.read_csv(file_path)
 final_df = final_df.fillna(0)
 
 # Streamlit App
-st.title('Haj and Umrah Statistics')
+st.title('Basic Reporting Environment')
 
 # Filter by Description
 description_options = final_df['Description'].unique()
-selected_description = st.selectbox('Select Report', description_options)
+selected_description = st.selectbox('Select Description', description_options)
 
 # Filtered Data by Description
 filtered_df = final_df[final_df['Description'] == selected_description]
@@ -47,3 +48,25 @@ ax.set_xlabel('Date')
 ax.set_ylabel('Value')
 ax.legend(title='Metric and Location')
 st.pyplot(fig)
+
+# Time Series Forecasting with Prophet
+st.header('Forecasting for 2024')
+for metric in selected_metrics:
+    for location in selected_locations:
+        series = time_series_data[(metric, location)]
+        df = pd.DataFrame({'ds': series.index, 'y': series.values})
+        model = Prophet()
+        model.fit(df)
+        future = model.make_future_dataframe(periods=12, freq='M')
+        forecast = model.predict(future)
+        forecast.set_index('ds', inplace=True)
+        
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.plot(series.index, series, label='Historical')
+        ax.plot(forecast.index, forecast['yhat'], label='Forecast')
+        ax.fill_between(forecast.index, forecast['yhat_lower'], forecast['yhat_upper'], alpha=0.3)
+        ax.set_title(f'Forecast for {metric} in {location}')
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Value')
+        ax.legend()
+        st.pyplot(fig)
