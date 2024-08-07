@@ -3,6 +3,4 @@ pandas==1.5.3
 matplotlib==3.6.3
 prophet==1.1
 numpy==1.23.4
-cmdstanpy==0.9.68
 holidays==0.13
-convertdate==2.3.2
