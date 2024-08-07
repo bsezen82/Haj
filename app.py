@@ -4,10 +4,6 @@ import matplotlib.pyplot as plt
 from prophet import Prophet
 import numpy as np
 
-# Ensure the cmdstanpy backend is used for Prophet
-import cmdstanpy
-cmdstanpy.install_cmdstan()
-
 
 # Load the final data from the CSV file
 file_path = 'final_data.csv'
