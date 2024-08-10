@@ -42,13 +42,7 @@ fig, ax = plt.subplots(figsize=(12, 6))
 for column in time_series_data.columns:
     ax.plot(time_series_data.index, time_series_data[column], label=column)
 
-# Set the title dynamically based on the selected metric
-if len(selected_metrics) == 1:
-    metric_title = selected_metrics[0]
-else:
-    metric_title = "Selected Metrics"
-
-ax.set_title(f'{metric_title} Trend')
+ax.set_title('Time Series Trend')
 ax.set_xlabel('Date')
 ax.set_ylabel('Value')
 ax.legend(title='Metric and Location')
