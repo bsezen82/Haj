@@ -21,7 +21,7 @@ filtered_df = final_df[final_df['Description'] == selected_description]
 
 # Filter by Location
 location_options = filtered_df['Location'].unique()
-selected_locations = st.multiselect('Select Location(s)', location_options, default=location_options)
+selected_locations = st.multiselect('Select Location(s)', location_options, default=[location_options[0]])
 
 # Filter by Metric
 metric_options = filtered_df['Metric'].unique()
@@ -42,7 +42,13 @@ fig, ax = plt.subplots(figsize=(12, 6))
 for column in time_series_data.columns:
     ax.plot(time_series_data.index, time_series_data[column], label=column)
 
-ax.set_title('Time Series Trend')
+# Set the title dynamically based on the selected metric
+if len(selected_metrics) == 1:
+    metric_title = selected_metrics[0]
+else:
+    metric_title = "Selected Metrics"
+
+ax.set_title(f'{metric_title} Trend')
 ax.set_xlabel('Date')
 ax.set_ylabel('Value')
 ax.legend(title='Metric and Location')
