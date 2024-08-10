@@ -39,11 +39,13 @@ time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y
 
 # Plotting
 fig, ax = plt.subplots(figsize=(12, 6))
-for column in time_series_data.columns:
-    ax.plot(time_series_data.index, time_series_data[column], label=column)
 
-ax.set_title('Time Series Trend')
-ax.set_xlabel('Date')
-ax.set_ylabel('Value')
-ax.legend(title='Metric and Location')
-st.pyplot(fig)
+if len(selected_metrics) == 1:
+    # When only one metric is selected, compare each year
+    metric = selected_metrics[0]
+    for location in selected_locations:
+        for year in ['2021', '2022', '2023']:
+            yearly_data = time_series_data[time_series_data.index.year == int(year)]
+            ax.plot(yearly_data.index.month, yearly_data[(metric, location)], label=f'{metric} in {location} ({year})')
+    ax.set_xticks(range(1, 13))
+    ax.set
