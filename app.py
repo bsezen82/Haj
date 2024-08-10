@@ -41,11 +41,23 @@ time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y
 fig, ax = plt.subplots(figsize=(12, 6))
 
 if len(selected_metrics) == 1:
-    # When only one metric is selected, compare each year
+    # If only one metric is selected, plot year-over-year comparison
     metric = selected_metrics[0]
     for location in selected_locations:
-        for year in ['2021', '2022', '2023']:
-            yearly_data = time_series_data[time_series_data.index.year == int(year)]
-            ax.plot(yearly_data.index.month, yearly_data[(metric, location)], label=f'{metric} in {location} ({year})')
-    ax.set_xticks(range(1, 13))
-    ax.set
+        data = time_series_data[(metric, location)]
+        data_by_year = data.groupby(data.index.year)
+        for year, year_data in data_by_year:
+            ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({location})')
+    ax.set_xlabel('Month')
+    ax.set_xticks(range(12))
+    ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
+else:
+    # If more than one metric is selected, plot each metric over time
+    for column in time_series_data.columns:
+        ax.plot(time_series_data.index, time_series_data[column], label=column)
+    ax.set_xlabel('Date')
+
+ax.set_title('Time Series Trend')
+ax.set_ylabel('Value')
+ax.legend(title='Metric and Location')
+st.pyplot(fig)
