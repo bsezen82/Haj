@@ -11,6 +11,9 @@ final_df = pd.read_csv(file_path)
 # Fill null values with 0
 final_df = final_df.fillna(0)
 
+# Ensure that all date columns are parsed correctly as datetime
+final_df.columns = pd.to_datetime(final_df.columns, errors='ignore')
+
 # Streamlit App
 st.title('Basic Reporting Environment')
 
@@ -40,7 +43,7 @@ filtered_df = filtered_df.set_index(['Metric', 'Location'])
 
 # Extract the time series data
 time_series_data = filtered_df.loc[:, '01.01.2021':].T
-time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y')
+time_series_data.index = pd.to_datetime(time_series_data.index)
 
 # Prepare the plot
 fig, ax = plt.subplots(figsize=(12, 6))
