@@ -44,6 +44,18 @@ time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y
 # Prepare the plot
 fig, ax = plt.subplots(figsize=(12, 6))
 
+# Function to add 2024 predictions to the graph
+def add_predictions(ax, series, location, label_suffix=""):
+    model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
+    model_fit = model.fit()
+
+    # Predict for 2024
+    future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
+    y_pred = model_fit.forecast(steps=12)
+
+    # Plot the forecast data for 2024
+    ax.plot(future_index, y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
+
 if len(selected_metrics) == 1:
     # If only one metric is selected, plot year-over-year comparison
     metric = selected_metrics[0]
@@ -54,24 +66,21 @@ if len(selected_metrics) == 1:
             ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({location})')
         
         if make_prediction:
-            # Apply Exponential Smoothing to predict for 2024
-            model = ExponentialSmoothing(data, trend='add', seasonal='add', seasonal_periods=12)
-            model_fit = model.fit()
-
-            # Predict for 2024
-            future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
-            y_pred = model_fit.forecast(steps=12)
-
-            # Plot the forecast data for 2024
-            ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) ({location})')
-
+            add_predictions(ax, data, location)
+    
     ax.set_xlabel('Month')
     ax.set_xticks(range(12))
     ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
 else:
     # If more than one metric is selected, plot each metric over time
-    for column in time_series_data.columns:
-        ax.plot(time_series_data.index, time_series_data[column], label=column)
+    for metric in selected_metrics:
+        for location in selected_locations:
+            series = time_series_data[(metric, location)]
+            ax.plot(series.index, series, label=f'{metric} ({location})')
+
+            if make_prediction:
+                add_predictions(ax, series, location, label_suffix=f'({metric})')
+
     ax.set_xlabel('Date')
 
 # Set axis labels and title
@@ -81,3 +90,4 @@ ax.legend(title='Metric and Location')
 
 # Display the plot
 st.pyplot(fig)
+Key Features:
