@@ -41,28 +41,36 @@ time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y
 # Prepare the plot
 fig, ax = plt.subplots(figsize=(12, 6))
 
-# Loop through each selected metric and location to plot actual data and predictions
-for metric in selected_metrics:
+if len(selected_metrics) == 1:
+    # If only one metric is selected, plot year-over-year comparison
+    metric = selected_metrics[0]
     for location in selected_locations:
-        # Get the series for the current metric and location
-        series = time_series_data[(metric, location)]
-
+        data = time_series_data[(metric, location)]
+        data_by_year = data.groupby(data.index.year)
+        for year, year_data in data_by_year:
+            ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({location})')
+        
         # Apply Exponential Smoothing to predict for 2024
-        model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
+        model = ExponentialSmoothing(data, trend='add', seasonal='add', seasonal_periods=12)
         model_fit = model.fit()
 
         # Predict for 2024
         future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
         y_pred = model_fit.forecast(steps=12)
 
-        # Plot the actual data for 2021-2023
-        ax.plot(series.index, series, label=f'{metric} in {location} (Actual)')
-
         # Plot the forecast data for 2024
-        ax.plot(future_index, y_pred, linestyle='--', label=f'{metric} in {location} (Forecast)')
+        ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) ({location})')
+
+    ax.set_xlabel('Month')
+    ax.set_xticks(range(12))
+    ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
+else:
+    # If more than one metric is selected, plot each metric over time
+    for column in time_series_data.columns:
+        ax.plot(time_series_data.index, time_series_data[column], label=column)
+    ax.set_xlabel('Date')
 
 # Set axis labels and title
-ax.set_xlabel('Date')
 ax.set_ylabel('Value')
 ax.set_title('Time Series Trend with 2024 Predictions')
 ax.legend(title='Metric and Location')
