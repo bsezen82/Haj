@@ -90,4 +90,3 @@ ax.legend(title='Metric and Location')
 
 # Display the plot
 st.pyplot(fig)
-Key Features:
