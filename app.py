@@ -28,6 +28,9 @@ selected_locations = st.multiselect('Select Location(s)', location_options, defa
 metric_options = filtered_df['Metric'].unique()
 selected_metrics = st.multiselect('Select Metric(s)', metric_options, default=[metric_options[0]])
 
+# Option to make prediction
+make_prediction = st.checkbox('Make predictions for 2024')
+
 # Further filter the data based on selected locations and metrics
 filtered_df = filtered_df[filtered_df['Location'].isin(selected_locations) & filtered_df['Metric'].isin(selected_metrics)]
 
@@ -50,16 +53,17 @@ if len(selected_metrics) == 1:
         for year, year_data in data_by_year:
             ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({location})')
         
-        # Apply Exponential Smoothing to predict for 2024
-        model = ExponentialSmoothing(data, trend='add', seasonal='add', seasonal_periods=12)
-        model_fit = model.fit()
+        if make_prediction:
+            # Apply Exponential Smoothing to predict for 2024
+            model = ExponentialSmoothing(data, trend='add', seasonal='add', seasonal_periods=12)
+            model_fit = model.fit()
 
-        # Predict for 2024
-        future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
-        y_pred = model_fit.forecast(steps=12)
+            # Predict for 2024
+            future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
+            y_pred = model_fit.forecast(steps=12)
 
-        # Plot the forecast data for 2024
-        ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) ({location})')
+            # Plot the forecast data for 2024
+            ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) ({location})')
 
     ax.set_xlabel('Month')
     ax.set_xticks(range(12))
