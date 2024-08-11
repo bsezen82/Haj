@@ -99,7 +99,7 @@ else:
 
 # Set axis labels and title
 ax.set_ylabel('Value')
-ax.setTitle('Time Series Trend with 2024 Predictions')
+ax.set_title('Time Series Trend with 2024 Predictions')
 ax.legend(title='Metric and Location')
 
 # Display the plot
@@ -130,10 +130,10 @@ def generate_insights_for_2023(data, metric, location):
     lowest_month = data_2023.idxmin().strftime('%B') if not data_2023.empty else "N/A"
 
     insights = [
-        f"In 2023, the {metric} for {location} started at {start_value:.2f} and ended at {latest_value:.2f}, showing a trend.",
-        f"The average value in 2023 was {avg_2023:.2f}, which is {comparison_with_past} than the average of previous years.",
-        f"The highest value observed in 2023 was in {highest_month}, and the lowest was in {lowest_month}.",
-        f"In previous years, the highest annual average was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
+        f"• In 2023, the {metric} for {location} started at {start_value:.2f} and ended at {latest_value:.2f}, showing a trend.",
+        f"• The average value in 2023 was {avg_2023:.2f}, which is {comparison_with_past} than the average of previous years.",
+        f"• The highest value observed in 2023 was in {highest_month}, and the lowest was in {lowest_month}.",
+        f"• In previous years, the highest annual average was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
     ]
     
     return insights
