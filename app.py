@@ -11,7 +11,7 @@ final_df = pd.read_csv(file_path)
 # Fill null values with 0
 final_df = final_df.fillna(0)
 
-# Ensure that all date columns are parsed correctly as datetime
+# Ensure that all relevant columns are parsed as datetime if they represent dates
 final_df.columns = pd.to_datetime(final_df.columns, errors='ignore')
 
 # Streamlit App
