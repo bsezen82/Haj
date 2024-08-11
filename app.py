@@ -112,20 +112,31 @@ def generate_insights(data, metric, location):
     latest_value = data[-1]
     trend = "increasing" if latest_value > data.mean() else "decreasing"
     seasonality = "a strong seasonal pattern" if data.std() > data.mean() * 0.1 else "no strong seasonality"
+    volatility = "highly volatile" if data.std() > data.mean() * 0.15 else "relatively stable"
+    growth_rate = ((data[-1] - data[0]) / data[0]) * 100
 
-    return (f"The {metric} for {location} is currently {trend} with {seasonality}. "
-            f"The most recent value was {latest_value:.2f}. "
-            f"Predictions for 2024 suggest the trend will continue.")
+    insights = [
+        f"The {metric} for {location} is currently {trend}.",
+        f"This metric shows {seasonality} over the past few years.",
+        f"The metric is {volatility} with a growth rate of {growth_rate:.2f}% over the selected period.",
+    ]
+    
+    if make_prediction:
+        insights.append("The forecast for 2024 suggests that the trend will likely continue based on the historical data.")
+    
+    return insights
 
 if len(selected_metrics) == 1:
     metric = selected_metrics[0]
     for location in selected_locations:
         data = time_series_data[(metric, location)]
-        insight_text = generate_insights(data, metric, location)
-        st.write(insight_text)
+        insights = generate_insights(data, metric, location)
+        for insight in insights:
+            st.write(insight)
 else:
     for metric in selected_metrics:
         for location in selected_locations:
             data = time_series_data[(metric, location)]
-            insight_text = generate_insights(data, metric, location)
-            st.write(insight_text)
+            insights = generate_insights(data, metric, location)
+            for insight in insights:
+                st.write(insight)
