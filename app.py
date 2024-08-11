@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
-from scipy.signal import find_peaks
-import numpy as np
 
 # Load the final data from the CSV file
 file_path = 'final_data.csv'
@@ -13,7 +11,7 @@ final_df = pd.read_csv(file_path)
 final_df = final_df.fillna(0)
 
 # Streamlit App
-st.title('Advanced Reporting Environment with AI Insights')
+st.title('Basic Reporting Environment')
 
 # Filter by Description
 description_options = final_df['Description'].unique()
@@ -56,9 +54,8 @@ def add_predictions(ax, series, location, label_suffix=""):
     y_pred = model_fit.forecast(steps=12)
 
     # Plot the forecast data for 2024
-    ax.plot(future_index, y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
-    return y_pred
-    
+    ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
+
 def add_predictions_multiple(ax, series, location, label_suffix=""):
     model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
     model_fit = model.fit()
@@ -70,29 +67,6 @@ def add_predictions_multiple(ax, series, location, label_suffix=""):
     # Plot the forecast data for 2024
     ax.plot(future_index, y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
 
-# Function to analyze trends, anomalies, and seasonality
-def analyze_data(series, location):
-    analysis = []
-    trend = np.polyfit(range(len(series)), series, 1)
-    trend_slope = trend[0]
-    if trend_slope > 0:
-        analysis.append(f"The data for {location} shows an upward trend.")
-    else:
-        analysis.append(f"The data for {location} shows a downward trend.")
-    
-    # Detect peaks (anomalies)
-    peaks, _ = find_peaks(series, prominence=1)
-    if len(peaks) > 0:
-        analysis.append(f"Anomalies detected in {location}: Significant peaks at positions {peaks.tolist()}.")
-    
-    # Check for seasonality
-    if series.index.freq or series.index.inferred_freq:
-        analysis.append(f"Seasonality detected in the data for {location}.")
-    
-    return analysis
-
-insights = []
-
 if len(selected_metrics) == 1:
     # If only one metric is selected, plot year-over-year comparison
     metric = selected_metrics[0]
@@ -102,14 +76,8 @@ if len(selected_metrics) == 1:
         for year, year_data in data_by_year:
             ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({location})')
 
-            # Add AI-based insights
-            avg_value = np.mean(year_data.values)
-            insights.append(f"In {year}, the average value for {metric} in {location} was {avg_value:.2f}.")
-            insights.extend(analyze_data(year_data.values, location))
-            
         if make_prediction:
-            y_pred = add_predictions(ax, data, location)
-            insights.append(f"Predictions for 2024 suggest that the trend will continue with a similar pattern, reaching an estimated value of {y_pred[-1]:.2f} by December 2024.")
+            add_predictions(ax, data, location)
     
     ax.set_xlabel('Month')
     ax.set_xticks(range(12))
@@ -122,11 +90,7 @@ else:
             ax.plot(series.index, series, label=f'{metric} ({location})')
 
             if make_prediction:
-                y_pred = add_predictions_multiple(ax, series, location, label_suffix=f'({metric})')
-                insights.append(f"The forecast for {metric} in {location} shows an expected increase to {y_pred[-1]:.2f} by December 2024.")
-            
-            # Analyze trends, anomalies, and seasonality
-            insights.extend(analyze_data(series.values, location))
+                add_predictions_multiple(ax, series, location, label_suffix=f'({metric})')
 
     # Extend the x-axis to cover the prediction period if predictions are made
     if make_prediction:
@@ -141,7 +105,27 @@ ax.legend(title='Metric and Location')
 # Display the plot
 st.pyplot(fig)
 
-# Display AI-based insights
-st.header('AI-Generated Insights')
-for insight in insights:
-    st.write(insight)
+# Generate Insights
+st.subheader("Generated Insights")
+
+def generate_insights(data, metric, location):
+    latest_value = data[-1]
+    trend = "increasing" if latest_value > data.mean() else "decreasing"
+    seasonality = "a strong seasonal pattern" if data.std() > data.mean() * 0.1 else "no strong seasonality"
+
+    return (f"The {metric} for {location} is currently {trend} with {seasonality}. "
+            f"The most recent value was {latest_value:.2f}. "
+            f"Predictions for 2024 suggest the trend will continue.")
+
+if len(selected_metrics) == 1:
+    metric = selected_metrics[0]
+    for location in selected_locations:
+        data = time_series_data[(metric, location)]
+        insight_text = generate_insights(data, metric, location)
+        st.write(insight_text)
+else:
+    for metric in selected_metrics:
+        for location in selected_locations:
+            data = time_series_data[(metric, location)]
+            insight_text = generate_insights(data, metric, location)
+            st.write(insight_text)
