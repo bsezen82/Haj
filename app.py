@@ -99,13 +99,13 @@ else:
 
 # Set axis labels and title
 ax.set_ylabel('Value')
-ax.set_title('Time Series Trend with 2024 Predictions')
+ax.setTitle('Time Series Trend with 2024 Predictions')
 ax.legend(title='Metric and Location')
 
 # Display the plot
 st.pyplot(fig)
 
-# Generate Insights for 2023
+# Generate Insights for 2023 with Comparisons to Previous Years
 st.subheader("Generated Insights for 2023")
 
 def generate_insights_for_2023(data, metric, location):
@@ -116,15 +116,24 @@ def generate_insights_for_2023(data, metric, location):
     mean_value = data_2023.mean()
     std_dev = data_2023.std()
 
-    trend = "increasing" if latest_value > mean_value else "decreasing"
-    seasonality = "a strong seasonal pattern" if std_dev > mean_value * 0.1 else "no strong seasonality"
-    volatility = "highly volatile" if std_dev > mean_value * 0.15 else "relatively stable"
-    growth_rate = ((latest_value - start_value) / start_value) * 100 if len(data_2023) > 1 else 0
+    # Year-over-Year Comparisons
+    previous_years = data[data.index.year < 2023]
+    avg_previous_years = previous_years.groupby(previous_years.index.year).mean()
+    avg_2023 = mean_value
+    comparison_with_past = "higher" if avg_2023 > avg_previous_years.mean() else "lower"
+
+    highest_prev_year = avg_previous_years.idxmax()[0]
+    highest_prev_value = avg_previous_years.max()[0]
+
+    # Monthly Trends in 2023
+    highest_month = data_2023.idxmax().strftime('%B') if not data_2023.empty else "N/A"
+    lowest_month = data_2023.idxmin().strftime('%B') if not data_2023.empty else "N/A"
 
     insights = [
-        f"In 2023, the {metric} for {location} started at {start_value:.2f} and ended at {latest_value:.2f}, showing a {trend} trend.",
-        f"The average value in 2023 was {mean_value:.2f}, with {seasonality} observed.",
-        f"The metric was {volatility}, with a growth rate of {growth_rate:.2f}% in 2023."
+        f"In 2023, the {metric} for {location} started at {start_value:.2f} and ended at {latest_value:.2f}, showing a trend.",
+        f"The average value in 2023 was {avg_2023:.2f}, which is {comparison_with_past} than the average of previous years.",
+        f"The highest value observed in 2023 was in {highest_month}, and the lowest was in {lowest_month}.",
+        f"In previous years, the highest annual average was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
     ]
     
     return insights
