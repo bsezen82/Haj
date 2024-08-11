@@ -122,8 +122,8 @@ def generate_insights_for_2023(data, metric, location):
     avg_2023 = mean_value
     comparison_with_past = "higher" if avg_2023 > avg_previous_years.mean() else "lower"
 
-    highest_prev_year = avg_previous_years.idxmax()[0]
-    highest_prev_value = avg_previous_years.max()[0]
+    highest_prev_year = avg_previous_years.idxmax()
+    highest_prev_value = avg_previous_years.max()
 
     # Monthly Trends in 2023
     highest_month = data_2023.idxmax().strftime('%B') if not data_2023.empty else "N/A"
