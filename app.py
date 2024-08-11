@@ -68,7 +68,7 @@ if make_prediction:
         for location in selected_locations:
             # Prepare data for regression
             series = time_series_data[(metric, location)]
-            X = np.array(range(len(series.index))).reshape(-1, 1)  # Days since the start
+            X = np.array(range(len(series.index))).reshape(-1, 1)  # Index (days since start)
             y = series.values
 
             # Train the linear regression model
