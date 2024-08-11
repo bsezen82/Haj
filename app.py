@@ -40,7 +40,7 @@ filtered_df = filtered_df.set_index(['Metric', 'Location'])
 
 # Extract the time series data
 time_series_data = filtered_df.loc[:, '01.01.2021':].T
-time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y')
+time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y', errors='coerce')
 
 # Prepare the plot
 fig, ax = plt.subplots(figsize=(12, 6))
@@ -76,12 +76,12 @@ if make_prediction:
             model.fit(X, y)
 
             # Predict for 2024
-            future_index = pd.date_range(start='2024-01-01', periods=12, freq='M')
+            future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
             X_future = np.array(range(len(series.index), len(series.index) + 12)).reshape(-1, 1)
             y_pred = model.predict(X_future)
 
             # Plot the real data
-            ax.plot(series.index, series, label=f'{metric} in {location} (Actual)')
+            ax.plot(series.index.tz_localize(None), series, label=f'{metric} in {location} (Actual)')
             
             # Plot the forecast data only for 2024
             ax.plot(future_index, y_pred, linestyle='--', label=f'{metric} in {location} (Forecast)')
