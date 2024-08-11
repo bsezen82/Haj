@@ -54,7 +54,7 @@ def add_predictions(ax, series, location, label_suffix=""):
     y_pred = model_fit.forecast(steps=12)
 
     # Plot the forecast data for 2024
-    ax.plot(future_index, y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
+    ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
 
 if len(selected_metrics) == 1:
     # If only one metric is selected, plot year-over-year comparison
@@ -64,7 +64,7 @@ if len(selected_metrics) == 1:
         data_by_year = data.groupby(data.index.year)
         for year, year_data in data_by_year:
             ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({location})')
-        
+
         if make_prediction:
             add_predictions(ax, data, location)
     
