@@ -11,12 +11,6 @@ final_df = pd.read_csv(file_path)
 # Fill null values with 0
 final_df = final_df.fillna(0)
 
-# Identify date columns starting from the 6th column onward
-date_columns = final_df.columns[5:]
-
-# Apply flexible date parsing to those columns
-final_df[date_columns] = final_df[date_columns].apply(pd.to_datetime, format='mixed', errors='coerce')
-
 # Streamlit App
 st.title('Basic Reporting Environment')
 
@@ -45,8 +39,8 @@ filtered_df = filtered_df[filtered_df['Location'].isin(selected_locations) & fil
 filtered_df = filtered_df.set_index(['Metric', 'Location'])
 
 # Extract the time series data
-time_series_data = filtered_df[date_columns].T
-time_series_data.index = pd.to_datetime(time_series_data.index, format='mixed', errors='coerce')
+time_series_data = filtered_df.loc[:, '01.01.2021':].T
+time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y')
 
 # Prepare the plot
 fig, ax = plt.subplots(figsize=(12, 6))
