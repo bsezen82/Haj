@@ -56,6 +56,17 @@ def add_predictions(ax, series, location, label_suffix=""):
     # Plot the forecast data for 2024
     ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
 
+def add_predictions_multiple(ax, series, location, label_suffix=""):
+    model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
+    model_fit = model.fit()
+
+    # Predict for 2024
+    future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
+    y_pred = model_fit.forecast(steps=12)
+
+    # Plot the forecast data for 2024
+    ax.plot(future_index, y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
+
 if len(selected_metrics) == 1:
     # If only one metric is selected, plot year-over-year comparison
     metric = selected_metrics[0]
@@ -79,7 +90,7 @@ else:
             ax.plot(series.index, series, label=f'{metric} ({location})')
 
             if make_prediction:
-                add_predictions(ax, series, location, label_suffix=f'({metric})')
+                add_predictions_multiple(ax, series, location, label_suffix=f'({metric})')
 
     # Extend the x-axis to cover the prediction period if predictions are made
     if make_prediction:
