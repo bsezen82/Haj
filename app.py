@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-import numpy as np
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 # Load the final data from the CSV file
 file_path = 'final_data.csv'
@@ -69,20 +68,16 @@ if make_prediction:
     st.header('Forecasting for 2024')
     for metric in selected_metrics:
         for location in selected_locations:
-            # Prepare data for regression
+            # Prepare data for Exponential Smoothing
             series = time_series_data[(metric, location)]
-            X = np.array(range(len(series.index))).reshape(-1, 1)  # Index (days since start)
-            y = series.values
 
-            # Train the linear regression model
-            model = LinearRegression()
-            model.fit(X, y)
+            # Apply Exponential Smoothing
+            model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
+            model_fit = model.fit()
 
             # Predict for 2024
             future_index = pd.date_range(start='2024-01-01', periods=12, freq='M')
-            future_index = future_index.tz_localize(None)  # Remove any timezone information
-            X_future = np.array(range(len(series.index), len(series.index) + 12)).reshape(-1, 1)
-            y_pred = model.predict(X_future)
+            y_pred = model_fit.forecast(steps=12)
 
             # Plot the real data
             ax.plot(series.index, series, label=f'{metric} in {location} (Actual)')
