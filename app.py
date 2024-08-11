@@ -37,12 +37,9 @@ filtered_df = filtered_df[filtered_df['Location'].isin(selected_locations) & fil
 # Set the index to Metric and Location for easier plotting
 filtered_df = filtered_df.set_index(['Metric', 'Location'])
 
-# Extract the time series data
+# Extract the time series data and ensure it's timezone-naive
 time_series_data = filtered_df.loc[:, '01.01.2021':].T
-time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y', errors='coerce')
-
-# Remove any timezone information (if present)
-time_series_data.index = time_series_data.index.tz_localize(None)
+time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y', errors='coerce').tz_localize(None)
 
 # Prepare the plot
 fig, ax = plt.subplots(figsize=(12, 6))
@@ -75,13 +72,16 @@ if make_prediction:
             model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
             model_fit = model.fit()
 
-            # Predict for 2024
-            future_index = pd.date_range(start='2024-01-01', periods=12, freq='M')
+            # Predict for 2024, ensure dates are timezone-naive
+            future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
             y_pred = model_fit.forecast(steps=12)
+
+            # Ensure forecast dates are timezone-naive
+            future_index = pd.DatetimeIndex(future_index).tz_localize(None)
 
             # Plot the real data
             ax.plot(series.index, series, label=f'{metric} in {location} (Actual)')
-            
+
             # Plot the forecast data only for 2024
             ax.plot(future_index, y_pred, linestyle='--', label=f'{metric} in {location} (Forecast)')
 
