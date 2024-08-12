@@ -24,31 +24,31 @@ selected_analyses_metric = st.selectbox('Select Analyses Metric', analyses_metri
 
 # Further filtering based on the Analyses Metric
 if selected_analyses_metric == 'General':
-    filtered_df = final_df[final_df['report metric'] == selected_report_metric]
+    filtered_df = final_df[final_df['Report Metric'] == selected_report_metric]
 elif selected_analyses_metric == 'Destination Province':
     destination_options = final_df['B'].unique()
     selected_destinations = st.multiselect('Select Destination Province(s)', destination_options)
-    filtered_df = final_df[(final_df['report metric'] == selected_report_metric) & (final_df['B'].isin(selected_destinations))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['B'].isin(selected_destinations))]
 elif selected_analyses_metric == 'Origin':
     origin_options = final_df['C'].unique()
     selected_origins = st.multiselect('Select Origin(s)', origin_options)
-    filtered_df = final_df[(final_df['report metric'] == selected_report_metric) & (final_df['C'].isin(selected_origins))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['C'].isin(selected_origins))]
 elif selected_analyses_metric == 'Purpose of Visit':
     purpose_options = final_df['D'].unique()
     selected_purposes = st.multiselect('Select Purpose(s) of Visit', purpose_options)
-    filtered_df = final_df[(final_df['report metric'] == selected_report_metric) & (final_df['D'].isin(selected_purposes))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['D'].isin(selected_purposes))]
 elif selected_analyses_metric == 'Mode of Arrival':
     mode_options = final_df['E'].unique()
     selected_modes = st.multiselect('Select Mode(s) of Arrival', mode_options)
-    filtered_df = final_df[(final_df['report metric'] == selected_report_metric) & (final_df['E'].isin(selected_modes))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['E'].isin(selected_modes))]
 elif selected_analyses_metric == 'Type of Accommodation':
     accommodation_options = final_df['F'].unique()
     selected_accommodations = st.multiselect('Select Type(s) of Accommodation', accommodation_options)
-    filtered_df = final_df[(final_df['report metric'] == selected_report_metric) & (final_df['F'].isin(selected_accommodations))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['F'].isin(selected_accommodations))]
 elif selected_analyses_metric == 'Spending Type':
     spending_options = final_df['G'].unique()
     selected_spending = st.multiselect('Select Spending Type(s)', spending_options)
-    filtered_df = final_df[(final_df['report metric'] == selected_report_metric) & (final_df['G'].isin(selected_spending))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['G'].isin(selected_spending))]
 
 # Option to make prediction
 make_prediction = st.checkbox('Make predictions for 2024')
