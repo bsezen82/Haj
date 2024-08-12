@@ -14,6 +14,9 @@ final_df = final_df.fillna(0)
 # Streamlit App
 st.title('Haj and Umrah Analytics')
 
+# Check the column names
+st.write("Columns in the dataset:", final_df.columns)
+
 # Filter by Report Metric
 report_metric_options = final_df['Report Metric'].unique()
 selected_report_metric = st.selectbox('Select Report Metric', report_metric_options)
@@ -26,35 +29,35 @@ selected_analyses_metric = st.selectbox('Select Analyses Metric', analyses_metri
 if selected_analyses_metric == 'General':
     filtered_df = final_df[final_df['Report Metric'] == selected_report_metric]
 elif selected_analyses_metric == 'Destination Province':
-    destination_options = final_df['B'].unique()
+    destination_options = final_df['Destination Province'].unique()
     selected_destinations = st.multiselect('Select Destination Province(s)', destination_options)
-    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['B'].isin(selected_destinations))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['Destination Province'].isin(selected_destinations))]
 elif selected_analyses_metric == 'Origin':
-    origin_options = final_df['C'].unique()
+    origin_options = final_df['Origin'].unique()
     selected_origins = st.multiselect('Select Origin(s)', origin_options)
-    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['C'].isin(selected_origins))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['Origin'].isin(selected_origins))]
 elif selected_analyses_metric == 'Purpose of Visit':
-    purpose_options = final_df['D'].unique()
+    purpose_options = final_df['Purpose of Visit'].unique()
     selected_purposes = st.multiselect('Select Purpose(s) of Visit', purpose_options)
-    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['D'].isin(selected_purposes))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['Purpose of Visit'].isin(selected_purposes))]
 elif selected_analyses_metric == 'Mode of Arrival':
-    mode_options = final_df['E'].unique()
+    mode_options = final_df['Mode of Arrival'].unique()
     selected_modes = st.multiselect('Select Mode(s) of Arrival', mode_options)
-    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['E'].isin(selected_modes))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['Mode of Arrival'].isin(selected_modes))]
 elif selected_analyses_metric == 'Type of Accommodation':
-    accommodation_options = final_df['F'].unique()
+    accommodation_options = final_df['Type of Accommodation'].unique()
     selected_accommodations = st.multiselect('Select Type(s) of Accommodation', accommodation_options)
-    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['F'].isin(selected_accommodations))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['Type of Accommodation'].isin(selected_accommodations))]
 elif selected_analyses_metric == 'Spending Type':
-    spending_options = final_df['G'].unique()
+    spending_options = final_df['Spending Type'].unique()
     selected_spending = st.multiselect('Select Spending Type(s)', spending_options)
-    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['G'].isin(selected_spending))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df['Spending Type'].isin(selected_spending))]
 
 # Option to make prediction
 make_prediction = st.checkbox('Make predictions for 2024')
 
 # Set the index to ensure correct filtering and plotting
-filtered_df = filtered_df.set_index(['Report Metric'] + [selected_analyses_metric])
+filtered_df = filtered_df.set_index(['Report Metric', selected_analyses_metric])
 
 # Extract the time series data and ensure it's timezone-naive
 time_series_data = filtered_df.loc[:, '01.01.2021':].T
@@ -159,9 +162,4 @@ else:
 
 # Limit the total number of insights to 5
 max_insights = 5
-if len(insights) > max_insights:
-    insights = random.sample(insights, max_insights)
-
-# Display the limited insights
-for insight in insights:
-    st.write(insight)
+if len(insights) > max
