@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
+import random
 
 # Load the final data from the CSV file
 file_path = 'final_data.csv'
@@ -105,7 +106,7 @@ ax.legend(title='Metric and Location')
 # Display the plot
 st.pyplot(fig)
 
-# Generate Insights for 2023 with Comparisons to Previous Years
+# Generate Insights for 2023 and Multiple Metric Comparisons
 st.subheader("Generated Insights for 2023")
 
 def generate_insights_for_2023(data, metric, location):
@@ -138,17 +139,54 @@ def generate_insights_for_2023(data, metric, location):
     
     return insights
 
+def generate_comparative_insights(data_dict):
+    insights = []
+
+    # Compare averages
+    avg_values = {metric: data.mean() for metric, data in data_dict.items()}
+    max_avg_metric = max(avg_values, key=avg_values.get)
+    min_avg_metric = min(avg_values, key=avg_values.get)
+    insights.append(f"• The metric with the highest average value is {max_avg_metric} with {avg_values[max_avg_metric]:.2f}.")
+    insights.append(f"• The metric with the lowest average value is {min_avg_metric} with {avg_values[min_avg_metric]:.2f}.")
+
+    # Compare trends
+    trend_changes = {metric: data[-1] - data[0] for metric, data in data_dict.items()}
+    increasing_metric = max(trend_changes, key=trend_changes.get)
+    decreasing_metric = min(trend_changes, key=trend_changes.get)
+    insights.append(f"• The metric that increased the most over the period is {increasing_metric}.")
+    insights.append(f"• The metric that decreased the most over the period is {decreasing_metric}.")
+
+    # Compare volatility
+    volatility = {metric: data.std() for metric, data in data_dict.items()}
+    most_volatile_metric = max(volatility, key=volatility.get)
+    least_volatile_metric = min(volatility, key=volatility.get)
+    insights.append(f"• The most volatile metric is {most_volatile_metric}.")
+    insights.append(f"• The least volatile metric is {least_volatile_metric}.")
+
+    return insights
+
+all_insights = []
+
 if len(selected_metrics) == 1:
     metric = selected_metrics[0]
     for location in selected_locations:
         data = time_series_data[(metric, location)]
         insights = generate_insights_for_2023(data, metric, location)
-        for insight in insights:
-            st.write(insight)
+        all_insights.extend(insights)
 else:
+    data_dict = {}
     for metric in selected_metrics:
         for location in selected_locations:
             data = time_series_data[(metric, location)]
+            data_dict[metric] = data
             insights = generate_insights_for_2023(data, metric, location)
-            for insight in insights:
-                st.write(insight)
+            all_insights.extend(insights)
+
+    # Generate comparative insights for multiple metrics
+    comparative_insights = generate_comparative_insights(data_dict)
+    all_insights.extend(comparative_insights)
+
+# Limit the total number of insights to 5, either by selecting critical ones or randomly
+max_insights = 5
+if len(all_insights) > max_insights:
+    all_insights = random.sample(all_insights, max_insights)
