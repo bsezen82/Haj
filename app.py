@@ -12,10 +12,10 @@ final_df = pd.read_csv(file_path)
 final_df = final_df.fillna(0)
 
 # Streamlit App
-st.title('Advanced Reporting Environment')
+st.title('Haj and Umrah Analytics')
 
 # Filter by Report Metric
-report_metric_options = final_df['report metric'].unique()
+report_metric_options = final_df['Report Metric'].unique()
 selected_report_metric = st.selectbox('Select Report Metric', report_metric_options)
 
 # Filter by Analyses Metric
