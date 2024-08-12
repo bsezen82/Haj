@@ -131,10 +131,10 @@ def generate_insights_for_2023(data, metric, location):
     lowest_month = data_2023.idxmin().strftime('%B') if not data_2023.empty else "N/A"
 
     insights = [
-        f"• In 2023, the {metric} for {location} started at {start_value:.2f} and ended at {latest_value:.2f}, showing a trend.",
-        f"• The average value in 2023 was {avg_2023:.2f}, which is {comparison_with_past} than the average of previous years.",
-        f"• The highest value observed in 2023 was in {highest_month}, and the lowest was in {lowest_month}.",
-        f"• In previous years, the highest annual average was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
+        f"• For {metric} in {location}, 2023 started at {start_value:.2f} and ended at {latest_value:.2f}, showing a trend.",
+        f"• The average value of {metric} in 2023 was {avg_2023:.2f}, which is {comparison_with_past} than the average of previous years.",
+        f"• The highest value for {metric} in 2023 was observed in {highest_month}, and the lowest was in {lowest_month}.",
+        f"• In previous years, the highest annual average for {metric} was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
     ]
     
     return insights
@@ -186,7 +186,11 @@ else:
     comparative_insights = generate_comparative_insights(data_dict)
     all_insights.extend(comparative_insights)
 
-# Limit the total number of insights to 5, either by selecting critical ones or randomly
+# Limit the total number of insights to 5
 max_insights = 5
 if len(all_insights) > max_insights:
     all_insights = random.sample(all_insights, max_insights)
+
+# Display the limited insights
+for insight in all_insights:
+    st.write(insight)
