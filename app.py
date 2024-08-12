@@ -54,7 +54,7 @@ elif selected_analyses_metric == 'Spending Type':
 make_prediction = st.checkbox('Make predictions for 2024')
 
 # Set the index to ensure correct filtering and plotting
-filtered_df = filtered_df.set_index(['report metric'] + [selected_analyses_metric])
+filtered_df = filtered_df.set_index(['Report Metric'] + [selected_analyses_metric])
 
 # Extract the time series data and ensure it's timezone-naive
 time_series_data = filtered_df.loc[:, '01.01.2021':].T
