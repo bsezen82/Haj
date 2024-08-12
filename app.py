@@ -5,7 +5,7 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import random
 
 # Load the final data from the CSV file
-file_path = '/mnt/data/final_data.csv'
+file_path = 'final_data.csv'
 final_df = pd.read_csv(file_path)
 
 # Ensure column names are stripped of leading/trailing spaces
