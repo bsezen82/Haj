@@ -33,6 +33,12 @@ selected_analyses_metric = st.selectbox('Select Analyses Metric', analyses_metri
 # Further filtering based on the Analyses Metric
 column_name = analyses_metric_options[selected_analyses_metric]
 
+# Filter other metrics as "All"
+if column_name is not None:
+    for col_name, col_value in analyses_metric_options.items():
+        if col_value and col_value != column_name:
+            final_df = final_df[final_df[col_value] == 'All']
+
 if column_name is None:
     filtered_df = final_df[final_df['Report Metric'] == selected_report_metric]
 else:
