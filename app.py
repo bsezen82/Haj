@@ -61,9 +61,15 @@ if column_name is None:
 else:
     filtered_df = filtered_df.set_index(['Report Metric', column_name])
 
+# Debugging: Check the index of filtered_df
+st.write("Filtered DataFrame Index:", filtered_df.index)
+
 # Extract the time series data and ensure it's timezone-naive
 time_series_data = filtered_df.loc[:, '01.01.2021':].T
 time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y', errors='coerce').tz_localize(None)
+
+# Debugging: Check the index of time_series_data
+st.write("Time Series Data Index:", time_series_data.columns)
 
 # Prepare the plot
 fig, ax = plt.subplots(figsize=(12, 6))
@@ -84,25 +90,33 @@ def add_predictions(ax, series, label_suffix=""):
 if column_name is None or len(filtered_df.index.get_level_values(column_name).unique()) == 1:
     # Single value selected in the third filtering
     selected_value = filtered_df.index.get_level_values(column_name)[0] if column_name else selected_report_metric
-    data = time_series_data[selected_value]
-    data_by_year = data.groupby(data.index.year)
-    for year, year_data in data_by_year:
-        ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({selected_value})')
 
-    if make_prediction:
-        add_predictions(ax, data, label_suffix=selected_value)
+    # Check if the selected value exists in the time_series_data columns
+    if selected_value not in time_series_data.columns:
+        st.error(f"Selected value '{selected_value}' not found in the data.")
+    else:
+        data = time_series_data[selected_value]
+        data_by_year = data.groupby(data.index.year)
+        for year, year_data in data_by_year:
+            ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({selected_value})')
+
+        if make_prediction:
+            add_predictions(ax, data, label_suffix=selected_value)
     
-    ax.set_xlabel('Month')
-    ax.set_xticks(range(12))
-    ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
+        ax.set_xlabel('Month')
+        ax.set_xticks(range(12))
+        ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
 else:
     # Multiple values selected in the third filtering
     for value in filtered_df.index.get_level_values(column_name).unique():
-        series = time_series_data[value]
-        ax.plot(series.index, series, label=f'{value}')
+        if value not in time_series_data.columns:
+            st.error(f"Selected value '{value}' not found in the data.")
+        else:
+            series = time_series_data[value]
+            ax.plot(series.index, series, label=f'{value}')
 
-        if make_prediction:
-            add_predictions(ax, series, label_suffix=value)
+            if make_prediction:
+                add_predictions(ax, series, label_suffix=value)
 
     # Extend the x-axis to cover the prediction period if predictions are made
     if make_prediction:
@@ -154,14 +168,16 @@ def generate_insights_for_2023(data, metric, analysis_value):
 if column_name is None or len(filtered_df.index.get_level_values(column_name).unique()) == 1:
     # Single value selected in the third filtering
     selected_value = filtered_df.index.get_level_values(column_name)[0] if column_name else selected_report_metric
-    data = time_series_data[selected_value]
-    insights = generate_insights_for_2023(data, selected_report_metric, selected_value)
+    if selected_value in time_series_data.columns:
+        data = time_series_data[selected_value]
+        insights = generate_insights_for_2023(data, selected_report_metric, selected_value)
 else:
     # Multiple values selected in the third filtering
     insights = []
     for value in filtered_df.index.get_level_values(column_name).unique():
-        data = time_series_data[value]
-        insights.extend(generate_insights_for_2023(data, selected_report_metric, value))
+        if value in time_series_data.columns:
+            data = time_series_data[value]
+            insights.extend(generate_insights_for_2023(data, selected_report_metric, value))
 
 # Limit the total number of insights to 5
 max_insights = 5
