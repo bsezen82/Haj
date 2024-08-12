@@ -4,39 +4,59 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import random
 
-# Load the final data from the CSV file
-file_path = 'final_data.csv'
+# Load the updated final data from the CSV file
+file_path = '/mnt/data/final_data.csv'
 final_df = pd.read_csv(file_path)
 
 # Fill null values with 0
 final_df = final_df.fillna(0)
 
 # Streamlit App
-st.title('Basic Reporting Environment')
+st.title('Enhanced Reporting Environment')
 
-# Filter by Description
-description_options = final_df['Description'].unique()
-selected_description = st.selectbox('Select Description', description_options)
+# Filter by Report Metric
+metric_options = final_df['report metric'].unique()
+selected_metric = st.selectbox('Select Report Metric', metric_options)
 
-# Filtered Data by Description
-filtered_df = final_df[final_df['Description'] == selected_description]
+# Filtered Data by Report Metric
+filtered_df = final_df[final_df['report metric'] == selected_metric]
 
-# Filter by Location
-location_options = filtered_df['Location'].unique()
-selected_locations = st.multiselect('Select Location(s)', location_options, default=[location_options[0]])
+# Filter by Destination Province
+province_options = filtered_df['Destination Province'].unique()
+selected_provinces = st.multiselect('Select Destination Province(s)', province_options, default=province_options)
 
-# Filter by Metric
-metric_options = filtered_df['Metric'].unique()
-selected_metrics = st.multiselect('Select Metric(s)', metric_options, default=[metric_options[0]])
+# Filter by Origin
+origin_options = filtered_df['Origin'].unique()
+selected_origins = st.multiselect('Select Origin(s)', origin_options, default=origin_options)
 
-# Option to make prediction
-make_prediction = st.checkbox('Make predictions for 2024')
+# Filter by Purpose of Visit
+purpose_options = filtered_df['Purpose of Visit'].unique()
+selected_purposes = st.multiselect('Select Purpose of Visit(s)', purpose_options, default=purpose_options)
 
-# Further filter the data based on selected locations and metrics
-filtered_df = filtered_df[filtered_df['Location'].isin(selected_locations) & filtered_df['Metric'].isin(selected_metrics)]
+# Filter by Mode of Arrival
+arrival_options = filtered_df['Mode of Arrival'].unique()
+selected_arrivals = st.multiselect('Select Mode of Arrival(s)', arrival_options, default=arrival_options)
+
+# Filter by Type of Accommodation
+accommodation_options = filtered_df['Type of Accommodation'].unique()
+selected_accommodations = st.multiselect('Select Type of Accommodation(s)', accommodation_options, default=accommodation_options)
+
+# Filter by Spending Types
+spending_options = filtered_df['Spending Types'].unique()
+selected_spending = st.multiselect('Select Spending Type(s)', spending_options, default=spending_options)
+
+# Apply all filters to the DataFrame
+filtered_df = filtered_df[
+    (filtered_df['Destination Province'].isin(selected_provinces)) &
+    (filtered_df['Origin'].isin(selected_origins)) &
+    (filtered_df['Purpose of Visit'].isin(selected_purposes)) &
+    (filtered_df['Mode of Arrival'].isin(selected_arrivals)) &
+    (filtered_df['Type of Accommodation'].isin(selected_accommodations)) &
+    (filtered_df['Spending Types'].isin(selected_spending))
+]
 
 # Set the index to Metric and Location for easier plotting
-filtered_df = filtered_df.set_index(['Metric', 'Location'])
+filtered_df = filtered_df.set_index(['report metric', 'Destination Province', 'Origin', 'Purpose of Visit', 'Mode of Arrival', 'Type of Accommodation', 'Spending Types'])
 
 # Extract the time series data and ensure it's timezone-naive
 time_series_data = filtered_df.loc[:, '01.01.2021':].T
@@ -46,7 +66,7 @@ time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y
 fig, ax = plt.subplots(figsize=(12, 6))
 
 # Function to add 2024 predictions to the graph
-def add_predictions(ax, series, location, label_suffix=""):
+def add_predictions(ax, series, label_suffix=""):
     model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
     model_fit = model.fit()
 
@@ -55,61 +75,30 @@ def add_predictions(ax, series, location, label_suffix=""):
     y_pred = model_fit.forecast(steps=12)
 
     # Plot the forecast data for 2024
-    ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
+    ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
 
-def add_predictions_multiple(ax, series, location, label_suffix=""):
-    model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
-    model_fit = model.fit()
+if len(selected_metric) == 1:
+    for index, row in filtered_df.iterrows():
+        series = row['01.01.2021':]
+        ax.plot(time_series_data.index, series, label=f'{index}')
 
-    # Predict for 2024
-    future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
-    y_pred = model_fit.forecast(steps=12)
-
-    # Plot the forecast data for 2024
-    ax.plot(future_index, y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix} ({location})')
-
-if len(selected_metrics) == 1:
-    # If only one metric is selected, plot year-over-year comparison
-    metric = selected_metrics[0]
-    for location in selected_locations:
-        data = time_series_data[(metric, location)]
-        data_by_year = data.groupby(data.index.year)
-        for year, year_data in data_by_year:
-            ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({location})')
-
-        if make_prediction:
-            add_predictions(ax, data, location)
-    
-    ax.set_xlabel('Month')
-    ax.set_xticks(range(12))
-    ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
-else:
-    # If more than one metric is selected, plot each metric over time
-    for metric in selected_metrics:
-        for location in selected_locations:
-            series = time_series_data[(metric, location)]
-            ax.plot(series.index, series, label=f'{metric} ({location})')
-
-            if make_prediction:
-                add_predictions_multiple(ax, series, location, label_suffix=f'({metric})')
-
-    # Extend the x-axis to cover the prediction period if predictions are made
-    if make_prediction:
-        ax.set_xlim([time_series_data.index.min(), pd.to_datetime('2024-12-31')])
-    ax.set_xlabel('Date')
+        # If the user opts to make predictions for 2024
+        if st.checkbox('Make predictions for 2024'):
+            add_predictions(ax, series, label_suffix=f'{index}')
 
 # Set axis labels and title
+ax.set_xlabel('Month')
 ax.set_ylabel('Value')
-ax.set_title('Time Series Trend with 2024 Predictions')
-ax.legend(title='Metric and Location')
+ax.set_title(f'Time Series Trend for {selected_metric}')
+ax.legend(title='Metric Details')
 
 # Display the plot
 st.pyplot(fig)
 
-# Generate Insights for 2023 and Multiple Metric Comparisons
+# Generate Insights for 2023
 st.subheader("Generated Insights for 2023")
 
-def generate_insights_for_2023(data, metric, location):
+def generate_insights_for_2023(data, index_label):
     # Focus on 2023 data
     data_2023 = data[data.index.year == 2023]
     latest_value = data_2023[-1] if not data_2023.empty else None
@@ -131,60 +120,21 @@ def generate_insights_for_2023(data, metric, location):
     lowest_month = data_2023.idxmin().strftime('%B') if not data_2023.empty else "N/A"
 
     insights = [
-        f"• For {metric} in {location}, 2023 started at {start_value:.2f} and ended at {latest_value:.2f}, showing a trend.",
-        f"• The average value of {metric} in 2023 was {avg_2023:.2f}, which is {comparison_with_past} than the average of previous years.",
-        f"• The highest value for {metric} in 2023 was observed in {highest_month}, and the lowest was in {lowest_month}.",
-        f"• In previous years, the highest annual average for {metric} was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
+        f"• For {index_label}, 2023 started at {start_value:.2f} and ended at {latest_value:.2f}, showing a trend.",
+        f"• The average value in 2023 was {avg_2023:.2f}, which is {comparison_with_past} than the average of previous years.",
+        f"• The highest value in 2023 was observed in {highest_month}, and the lowest was in {lowest_month}.",
+        f"• In previous years, the highest annual average was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
     ]
     
     return insights
 
-def generate_comparative_insights(data_dict):
-    insights = []
-
-    # Compare averages
-    avg_values = {metric: data.mean() for metric, data in data_dict.items()}
-    max_avg_metric = max(avg_values, key=avg_values.get)
-    min_avg_metric = min(avg_values, key=avg_values.get)
-    insights.append(f"• The metric with the highest average value is {max_avg_metric} with {avg_values[max_avg_metric]:.2f}.")
-    insights.append(f"• The metric with the lowest average value is {min_avg_metric} with {avg_values[min_avg_metric]:.2f}.")
-
-    # Compare trends
-    trend_changes = {metric: data[-1] - data[0] for metric, data in data_dict.items()}
-    increasing_metric = max(trend_changes, key=trend_changes.get)
-    decreasing_metric = min(trend_changes, key=trend_changes.get)
-    insights.append(f"• The metric that increased the most over the period is {increasing_metric}.")
-    insights.append(f"• The metric that decreased the most over the period is {decreasing_metric}.")
-
-    # Compare volatility
-    volatility = {metric: data.std() for metric, data in data_dict.items()}
-    most_volatile_metric = max(volatility, key=volatility.get)
-    least_volatile_metric = min(volatility, key=volatility.get)
-    insights.append(f"• The most volatile metric is {most_volatile_metric}.")
-    insights.append(f"• The least volatile metric is {least_volatile_metric}.")
-
-    return insights
-
 all_insights = []
 
-if len(selected_metrics) == 1:
-    metric = selected_metrics[0]
-    for location in selected_locations:
-        data = time_series_data[(metric, location)]
-        insights = generate_insights_for_2023(data, metric, location)
-        all_insights.extend(insights)
-else:
-    data_dict = {}
-    for metric in selected_metrics:
-        for location in selected_locations:
-            data = time_series_data[(metric, location)]
-            data_dict[metric] = data
-            insights = generate_insights_for_2023(data, metric, location)
-            all_insights.extend(insights)
-
-    # Generate comparative insights for multiple metrics
-    comparative_insights = generate_comparative_insights(data_dict)
-    all_insights.extend(comparative_insights)
+# Generate insights for the selected metric
+for index, row in filtered_df.iterrows():
+    series = row['01.01.2021':]
+    insights = generate_insights_for_2023(series, index)
+    all_insights.extend(insights)
 
 # Limit the total number of insights to 5
 max_insights = 5
