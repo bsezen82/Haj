@@ -5,7 +5,7 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import random
 
 # Load the final data from the CSV file
-file_path = 'final_data.csv'
+file_path = '/mnt/data/final_data.csv'
 final_df = pd.read_csv(file_path)
 
 # Ensure column names are stripped of leading/trailing spaces
@@ -13,9 +13,6 @@ final_df.columns = final_df.columns.str.strip()
 
 # Streamlit App
 st.title('Advanced Reporting Environment')
-
-# Display the actual column names for debugging (optional, you can comment this out later)
-st.write("Column Names:", final_df.columns)
 
 # Filter by Report Metric
 report_metric_options = final_df['Report Metric'].unique()
@@ -37,20 +34,20 @@ selected_analyses_metric = st.selectbox('Select Analyses Metric', analyses_metri
 column_name = analyses_metric_options[selected_analyses_metric]
 
 if column_name is None:
-    filtered_df = final_df[final_df['report metric'] == selected_report_metric]
+    filtered_df = final_df[final_df['Report Metric'] == selected_report_metric]
 else:
     filter_options = final_df[column_name].unique()
     selected_filters = st.multiselect(f'Select {selected_analyses_metric}', filter_options)
-    filtered_df = final_df[(final_df['report metric'] == selected_report_metric) & (final_df[column_name].isin(selected_filters))]
+    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df[column_name].isin(selected_filters))]
 
 # Option to make prediction
 make_prediction = st.checkbox('Make predictions for 2024')
 
 # Set the index for correct filtering and plotting
 if column_name is None:
-    filtered_df = filtered_df.set_index('report metric')
+    filtered_df = filtered_df.set_index('Report Metric')
 else:
-    filtered_df = filtered_df.set_index(['report metric', column_name])
+    filtered_df = filtered_df.set_index(['Report Metric', column_name])
 
 # Extract the time series data and ensure it's timezone-naive
 time_series_data = filtered_df.loc[:, '01.01.2021':].T
