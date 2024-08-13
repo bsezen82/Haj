@@ -5,7 +5,7 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import random
 
 # Load the final data from the CSV file
-file_path = 'final_data.csv'
+file_path = '/mnt/data/final_data.csv'
 final_df = pd.read_csv(file_path)
 
 # Ensure column names are stripped of leading/trailing spaces
@@ -16,17 +16,17 @@ st.title('Advanced Reporting Environment')
 
 # Filter by Report Metric
 report_metric_options = final_df['Report Metric'].unique()
-selected_report_metric = st.selectbox('Select Report Metric', report_metric_options)
+selected_report_metric = st.selectbox('Select Report Metric', report_metric_options, index=list(report_metric_options).index("Number of Tourists"))
 
 # Filter by Analyses Metric
 analyses_metric_options = {
     'General': None,
-    'Destination Province': 'Destination Province',  # Replace 'B' with the actual column name for Destination Province
-    'Origin': 'Origin',                 # Replace 'C' with the actual column name for Origin
-    'Purpose of Visit': 'Purpose of Visit',       # Replace 'D' with the actual column name for Purpose of Visit
-    'Mode of Arrival': 'Mode of Arrival',        # Replace 'E' with the actual column name for Mode of Arrival
-    'Type of Accommodation': 'Type of Accommodation',  # Replace 'F' with the actual column name for Type of Accommodation
-    'Spending Type': 'Spending Type'           # Replace 'G' with the actual column name for Spending Type
+    'Destination Province': 'B',  # Replace 'B' with the actual column name for Destination Province
+    'Origin': 'C',                 # Replace 'C' with the actual column name for Origin
+    'Purpose of Visit': 'D',       # Replace 'D' with the actual column name for Purpose of Visit
+    'Mode of Arrival': 'E',        # Replace 'E' with the actual column name for Mode of Arrival
+    'Type of Accommodation': 'F',  # Replace 'F' with the actual column name for Type of Accommodation
+    'Spending Type': 'G'           # Replace 'G' with the actual column name for Spending Type
 }
 selected_analyses_metric = st.selectbox('Select Analyses Metric', analyses_metric_options.keys())
 
@@ -49,7 +49,7 @@ if column_name is None:
     filtered_df = final_df[final_df['Report Metric'] == selected_report_metric]
 else:
     filter_options = final_df[column_name].unique()
-    selected_filters = st.multiselect(f'Select {selected_analyses_metric}', filter_options)
+    selected_filters = st.multiselect(f'Select {selected_analyses_metric}', filter_options, default="All")
     filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df[column_name].isin(selected_filters))]
 
 # Option to make prediction
