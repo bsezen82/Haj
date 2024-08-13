@@ -82,7 +82,7 @@ else:
         y_pred = model_fit.forecast(steps=12)
 
         # Plot the forecast data for 2024
-        ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
+        ax.plot(future_index, y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
 
     # Plotting logic based on how many values are selected in the third filtering
     if selected_analyses_metric == 'General':
