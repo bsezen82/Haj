@@ -36,7 +36,7 @@ column_name = analyses_metric_options[selected_analyses_metric]
 # Filter other metrics as "All"
 if column_name is not None:
     for col_name, col_value in analyses_metric_options.items():
-        if col_value and col_value != column_name:
+        if col_value != column_name:
             final_df = final_df[final_df[col_value] == 'All']
 else:
     # If "General" is selected, filter all columns as "All"
