@@ -39,92 +39,69 @@ if column_name is not None:
         if col_value and col_value != column_name:
             final_df = final_df[final_df[col_value] == 'All']
 else:
-    # If "General" is selected, filter all columns as "All"
     for col_value in analyses_metric_options.values():
         if col_value:
             final_df = final_df[final_df[col_value] == 'All']
 
-# Apply filtering based on the selected report metric and analyses metric
 if column_name is None:
     filtered_df = final_df[final_df['Report Metric'] == selected_report_metric]
 else:
     filter_options = final_df[column_name].unique()
-    selected_filters = st.multiselect(f'Select {selected_analyses_metric}', filter_options, default="All")
+    selected_filters = st.multiselect(f'Select {selected_analyses_metric}', filter_options, default=["All"])
     filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df[column_name].isin(selected_filters))]
 
-# Option to make prediction
 make_prediction = st.checkbox('Make predictions for 2024')
 
-# Check if filtered_df is empty or missing expected indices
 if filtered_df.empty:
     st.warning(f"No data available for the selected filters.")
 else:
-    # Set the index for correct filtering and plotting
     if column_name is None:
         filtered_df = filtered_df.set_index('Report Metric')
     else:
         filtered_df = filtered_df.set_index(['Report Metric', column_name])
 
-    # Extract the time series data and ensure it's timezone-naive
     time_series_data = filtered_df.loc[:, '01.01.2021':].T
     time_series_data.index = pd.to_datetime(time_series_data.index, format='%d.%m.%Y', errors='coerce').tz_localize(None)
 
-    # Prepare the plot
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    # Function to add 2024 predictions to the graph
     def add_predictions(ax, series, label_suffix=""):
         model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
         model_fit = model.fit()
-
-        # Predict for 2024
         future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
         y_pred = model_fit.forecast(steps=12)
-
-        # Plot the forecast data for 2024
         ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
 
-    # Plotting logic based on how many values are selected in the third filtering
     if column_name is None or len(filtered_df.index.get_level_values(column_name).unique()) == 1:
-        # Single value selected in the third filtering
         selected_value = filtered_df.index.get_level_values(column_name)[0] if column_name else selected_report_metric
         if selected_value in time_series_data.columns:
             data = time_series_data[selected_value]
             data_by_year = data.groupby(data.index.year)
             for year, year_data in data_by_year:
                 ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({selected_value})')
-
             if make_prediction:
                 add_predictions(ax, data, label_suffix=selected_value)
-            
             ax.set_xlabel('Month')
             ax.set_xticks(range(12))
             ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
         else:
-            st.warning(f"Selected value '{selected_value}' not found in the data.")
+            st.warning(f"No data available for '{selected_value}' in the selected year range.")
     else:
-        # Multiple values selected in the third filtering
         for value in filtered_df.index.get_level_values(column_name).unique():
             if value in time_series_data.columns:
                 series = time_series_data[value]
                 ax.plot(series.index, series, label=f'{value}')
-
                 if make_prediction:
                     add_predictions(ax, series, label_suffix=value)
             else:
-                st.warning(f"Selected value '{value}' not found in the data.")
-
-        # Extend the x-axis to cover the prediction period if predictions are made
+                st.warning(f"No data available for '{value}' in the selected year range.")
         if make_prediction:
             ax.set_xlim([time_series_data.index.min(), pd.to_datetime('2024-12-31')])
         ax.set_xlabel('Date')
 
-    # Set axis labels and title
     ax.set_ylabel('Value')
     ax.set_title(f'Trend Analysis: {selected_report_metric} with {selected_analyses_metric}')
     ax.legend(title=f'{selected_analyses_metric}')
-
-    # Display the plot
     st.pyplot(fig)
 
     # Generate Insights for 2023
