@@ -33,24 +33,28 @@ selected_analyses_metric = st.selectbox('Select Analyses Metric', analyses_metri
 # Further filtering based on the Analyses Metric
 column_name = analyses_metric_options[selected_analyses_metric]
 
-# Filter other metrics as "All"
-if column_name is not None:
-    for col_name, col_value in analyses_metric_options.items():
-        if col_value and col_value != column_name:
-            final_df = final_df[final_df[col_value] == 'All']
-else:
-    # If "General" is selected, filter all columns as "All"
-    for col_value in analyses_metric_options.values():
-        if col_value:
-            final_df = final_df[final_df[col_value] == 'All']
-
 # Apply filtering based on the selected report metric and analyses metric
-if column_name is None:
+if selected_analyses_metric == 'General':
+    # If "General" is selected, filter all other columns as "All"
+    for col_value in analyses_metric_options.values():
+        if col_value:  # Only filter columns that are not None
+            final_df = final_df[final_df[col_value] == 'All']
     filtered_df = final_df[final_df['Report Metric'] == selected_report_metric]
 else:
+    # If a specific analyses metric is selected
     filter_options = final_df[column_name].unique()
     selected_filters = st.multiselect(f'Select {selected_analyses_metric}', filter_options)
-    filtered_df = final_df[(final_df['Report Metric'] == selected_report_metric) & (final_df[column_name].isin(selected_filters))]
+    
+    # First, filter by selected report metric
+    filtered_df = final_df[final_df['Report Metric'] == selected_report_metric]
+    
+    # Then filter other metrics as "All"
+    for col_name, col_value in analyses_metric_options.items():
+        if col_value and col_value != column_name:
+            filtered_df = filtered_df[filtered_df[col_value] == 'All']
+    
+    # Finally, apply the selected filters for the chosen analyses metric
+    filtered_df = filtered_df[filtered_df[column_name].isin(selected_filters)]
 
 # Option to make prediction
 make_prediction = st.checkbox('Make predictions for 2024')
@@ -60,10 +64,8 @@ if filtered_df.empty:
     st.warning(f"No data available for the selected filters.")
 else:
     # Set the index for correct filtering and plotting
-    if column_name is None:
-        filtered_df = filtered_df.set_index('Report Metric')
-    else:
-        filtered_df = filtered_df.set_index(['Report Metric', column_name])
+    if column_name:
+        filtered_df.set_index(['Report Metric', column_name], inplace=True)
 
     # Extract the time series data and ensure it's timezone-naive
     time_series_data = filtered_df.loc[:, '01.01.2021':].T
