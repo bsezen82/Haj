@@ -180,18 +180,19 @@ else:
         return insights
 
     # Generate insights based on the third filtering step
+    insights = []
+
     if selected_analyses_metric == 'General':
-        # Handle the case where "General" is selected
+        # Generate insights for "General"
         data = time_series_data[selected_report_metric]
         insights = generate_insights_for_2023(data, selected_report_metric, "General")
     elif len(filtered_df.index.get_level_values(column_name).unique()) == 1:
         # Single value selected in the third filtering
-        selected_value = filtered_df.index.get_level_values(column_name)[0] if column_name else selected_report_metric
+        selected_value = filtered_df.index.get_level_values(column_name)[0]
         data = time_series_data[(selected_report_metric, selected_value)]
         insights = generate_insights_for_2023(data, selected_report_metric, selected_value)
     else:
         # Multiple values selected in the third filtering
-        insights = []
         for value in filtered_df.index.get_level_values(column_name).unique():
             data = time_series_data[(selected_report_metric, value)]
             insights.extend(generate_insights_for_2023(data, selected_report_metric, value))
@@ -199,7 +200,7 @@ else:
     # Limit the total number of insights to 5
     max_insights = 5
     if len(insights) > max_insights:
-        insights = random
+        insights = random.sample(insights, max_insights)
 
     # Display the limited insights
     for insight in insights:
