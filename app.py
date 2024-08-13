@@ -88,20 +88,20 @@ else:
     if column_name is None or len(filtered_df.index.get_level_values(column_name).unique()) == 1:
         # Single value selected in the third filtering
         selected_value = filtered_df.index.get_level_values(column_name)[0] if column_name else selected_report_metric
-        if selected_value in time_series_data.columns:
-            data = time_series_data[selected_value]
-            data_by_year = data.groupby(data.index.year)
-            for year, year_data in data_by_year:
-                ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({selected_value})')
+        if (selected_report_metric, selected_value) in time_series_data.columns:
+            data = time_series_data[(selected_report_metric, selected_value)]
+    data_by_year = data.groupby(data.index.year)
+    for year, year_data in data_by_year:
+        ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({selected_value})')
 
-            if make_prediction:
-                add_predictions(ax, data, label_suffix=selected_value)
-            
-            ax.set_xlabel('Month')
-            ax.set_xticks(range(12))
-            ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
-        else:
-            st.warning(f"Selected value '{selected_value}' not found in the data.")
+    if make_prediction:
+        add_predictions(ax, data, label_suffix=selected_value)
+
+    ax.set_xlabel('Month')
+    ax.set_xticks(range(12))
+    ax.set_xticklabels([pd.to_datetime(f'{i+1}', format='%m').strftime('%b') for i in range(12)])
+else:
+    st.warning(f"Selected combination '{selected_report_metric}, {selected_value}' not found in the data.")
     else:
         # Multiple values selected in the third filtering
         for value in filtered_df.index.get_level_values(column_name).unique():
