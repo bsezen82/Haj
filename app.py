@@ -177,7 +177,7 @@ else:
             f"• In previous years, the highest annual average for {metric} was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
         ]
 
-    return insights
+        return insights
 
     # Generate insights based on the third filtering step
     if selected_analyses_metric == 'General':
