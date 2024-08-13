@@ -74,7 +74,7 @@ else:
 
     # Function to add 2024 predictions to the graph
 
-  def add_predictions(ax, series, label_suffix=""):
+      def add_predictions(ax, series, label_suffix=""):
         model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
         model_fit = model.fit()
 
