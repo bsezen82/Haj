@@ -73,7 +73,19 @@ else:
     fig, ax = plt.subplots(figsize=(12, 6))
 
     # Function to add 2024 predictions to the graph
+        
     def add_predictions(ax, series, label_suffix=""):
+        model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
+        model_fit = model.fit()
+
+        # Predict for 2024
+        future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
+        y_pred = model_fit.forecast(steps=12)
+
+        # Plot the forecast data for 2024
+        ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
+        
+    def add_predictions_multiple(ax, series, label_suffix=""):
         model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
         model_fit = model.fit()
 
