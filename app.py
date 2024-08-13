@@ -90,9 +90,9 @@ else:
         selected_value = filtered_df.index.get_level_values(column_name)[0] if column_name else selected_report_metric
         if (selected_report_metric, selected_value) in time_series_data.columns:
             data = time_series_data[(selected_report_metric, selected_value)]
-    data_by_year = data.groupby(data.index.year)
-    for year, year_data in data_by_year:
-        ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({selected_value})')
+            data_by_year = data.groupby(data.index.year)
+            for year, year_data in data_by_year:
+                ax.plot(year_data.index.strftime('%b'), year_data.values, label=f'{year} ({selected_value})')
 
     if make_prediction:
         add_predictions(ax, data, label_suffix=selected_value)
