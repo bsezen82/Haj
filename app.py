@@ -21,7 +21,7 @@ selected_report_metric = st.selectbox('Select Report Metric', report_metric_opti
 # Filter by Analyses Metric
 analyses_metric_options = {
     'General': None,
-    'Destination Province': Destination Province,  # Replace 'B' with the actual column name for Destination Province
+    'Destination Province': 'Destination Province',  # Replace 'B' with the actual column name for Destination Province
     'Origin': 'Origin',                 # Replace 'C' with the actual column name for Origin
     'Purpose of Visit': 'Purpose of Visit',       # Replace 'D' with the actual column name for Purpose of Visit
     'Mode of Arrival': 'Mode of Arrival',        # Replace 'E' with the actual column name for Mode of Arrival
