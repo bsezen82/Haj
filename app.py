@@ -73,16 +73,21 @@ else:
     fig, ax = plt.subplots(figsize=(12, 6))
 
     # Function to add 2024 predictions to the graph
+
     def add_predictions(ax, series, label_suffix=""):
-        model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
-        model_fit = model.fit()
+    model = ExponentialSmoothing(series, trend='add', seasonal='add', seasonal_periods=12)
+    model_fit = model.fit()
 
-        # Predict for 2024
-        future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
-        y_pred = model_fit.forecast(steps=12)
+    # Predict for 2024
+    future_index = pd.date_range(start='2024-01-01', periods=12, freq='M').tz_localize(None)
+    y_pred = model_fit.forecast(steps=12)
 
-        # Plot the forecast data for 2024
-        ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
+    # Convert future_index to the correct format for plotting
+    future_index = pd.to_datetime(future_index).strftime('%Y-%m-%d')
+
+    # Plot the forecast data for 2024
+    ax.plot(pd.to_datetime(future_index), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
+        
 
     # Plotting logic based on how many values are selected in the third filtering
     if selected_analyses_metric == 'General':
