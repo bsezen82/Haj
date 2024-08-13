@@ -82,7 +82,7 @@ else:
         y_pred = model_fit.forecast(steps=12)
 
         # Plot the forecast data for 2024
-        ax.plot(future_index, y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
+        ax.plot(future_index.strftime('%b'), y_pred, linestyle='--', label=f'2024 (Forecast) {label_suffix}')
 
     # Plotting logic based on how many values are selected in the third filtering
     if selected_analyses_metric == 'General':
@@ -122,6 +122,7 @@ else:
             st.warning(f"Selected combination '{selected_report_metric}, {selected_value}' not found in the data.")
     else:
         # Multiple values selected in the third filtering
+        insights = []
         for value in filtered_df.index.get_level_values(column_name).unique():
             # Check if the combination exists in the time_series_data columns
             if (selected_report_metric, value) in time_series_data.columns:
@@ -130,6 +131,9 @@ else:
 
                 if make_prediction:
                     add_predictions(ax, series, label_suffix=value)
+
+                # Generate insights for each selected value
+                insights.extend(generate_insights_for_2023(series, selected_report_metric, value))
             else:
                 st.warning(f"Selected combination '{selected_report_metric}, {value}' not found in the data.")
 
@@ -146,62 +150,16 @@ else:
     # Display the plot
     st.pyplot(fig)
 
-    # Generate Insights for 2023
-    st.subheader("Generated Insights for 2023")
-
-    def generate_insights_for_2023(data, metric, analysis_value):
-        # Focus on 2023 data
-        data_2023 = data[data.index.year == 2023]
-        latest_value = data_2023[-1] if not data_2023.empty else None
-        start_value = data_2023[0] if len(data_2023) > 1 else None
-        mean_value = data_2023.mean()
-        std_dev = data_2023.std()
-
-        # Year-over-Year Comparisons
-        previous_years = data[data.index.year < 2023]
-        avg_previous_years = previous_years.groupby(previous_years.index.year).mean()
-        avg_2023 = mean_value
-        comparison_with_past = "higher" if avg_2023 > avg_previous_years.mean() else "lower"
-
-        highest_prev_year = avg_previous_years.idxmax()
-        highest_prev_value = avg_previous_years.max()
-
-        # Monthly Trends in 2023
-        highest_month = data_2023.idxmax().strftime('%B') if not data_2023.empty else "N/A"
-        lowest_month = data_2023.idxmin().strftime('%B') if not data_2023.empty else "N/A"
-
-        insights = [
-            f"• For {metric} in {analysis_value}, 2023 started at {start_value:.2f} and ended at {latest_value:.2f}, showing a trend.",
-            f"• The average value of {metric} in 2023 was {avg_2023:.2f}, which is {comparison_with_past} than the average of previous years.",
-            f"• The highest value for {metric} in 2023 was observed in {highest_month}, and the lowest was in {lowest_month}.",
-            f"• In previous years, the highest annual average for {metric} was observed in {highest_prev_year} with a value of {highest_prev_value:.2f}."
-        ]
+    # Display the insights for multiple selections, if any
+    if len(insights) > 0:
+        # Limit the total number of insights to 5
+        max_insights = 5
+        if len(insights) > max_insights:
+            insights = random.sample(insights, max_insights)
         
-        return insights
+        st.subheader("Generated Insights for 2023")
+        for insight in insights:
+            st.write(insight)
 
-    # Generate insights based on the third filtering step
-    insights = []
-
-    if selected_analyses_metric == 'General':
-        # Generate insights for "General"
-        data = time_series_data[selected_report_metric]
-        insights = generate_insights_for_2023(data, selected_report_metric, "General")
-    elif len(filtered_df.index.get_level_values(column_name).unique()) == 1:
-        # Single value selected in the third filtering
-        selected_value = filtered_df.index.get_level_values(column_name)[0]
-        data = time_series_data[(selected_report_metric, selected_value)]
-        insights = generate_insights_for_2023(data, selected_report_metric, selected_value)
     else:
-        # Multiple values selected in the third filtering
-        for value in filtered_df.index.get_level_values(column_name).unique():
-            data = time_series_data[(selected_report_metric, value)]
-            insights.extend(generate_insights_for_2023(data, selected_report_metric, value))
-
-    # Limit the total number of insights to 5
-    max_insights = 5
-    if len(insights) > max_insights:
-        insights = random.sample(insights, max_insights)
-
-    # Display the limited insights
-    for insight in insights:
-        st.write(insight)
+        st.subheader("No insights available for the selected filters.")
