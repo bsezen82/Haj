@@ -145,7 +145,7 @@ else:
                 ax.plot(series.index, series, label=f'{value}')
 
                 if make_prediction:
-                    add_predictions(ax, series, label_suffix=value)
+                    add_predictions_multiple(ax, series, label_suffix=value)
             else:
                 st.warning(f"Selected combination '{selected_report_metric}, {value}' not found in the data.")
 
